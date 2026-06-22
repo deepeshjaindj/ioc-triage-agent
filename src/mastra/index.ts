@@ -17,11 +17,20 @@ import {
 // Netlify Functions run on an ephemeral filesystem and bundle without native
 // modules, so a file-based LibSQL DB and the DuckDB native store don't work
 // there. Pick storage per environment:
-//   - Serverless (Netlify sets NETLIFY=true): LibSQL. Set DATABASE_URL +
-//     DATABASE_AUTH_TOKEN (e.g. a free Turso DB) for memory that persists across
-//     requests; otherwise it falls back to in-memory (stateless per cold start).
+//   - Serverless: LibSQL. Set DATABASE_URL + DATABASE_AUTH_TOKEN (e.g. a free
+//     Turso DB) for memory that persists across requests; otherwise it falls
+//     back to in-memory (stateless per cold start).
 //   - Local dev: keep the original file-based LibSQL + DuckDB observability store.
-const isServerless = !!process.env.NETLIFY;
+//
+// IMPORTANT: detect serverless via BOTH the build flag (NETLIFY, set during
+// `netlify build`) AND the Lambda runtime flags (LAMBDA_TASK_ROOT /
+// AWS_LAMBDA_FUNCTION_NAME, set when the function actually executes). NETLIFY is
+// NOT present at function runtime, so relying on it alone makes the runtime take
+// the DuckDB branch and crash with "Cannot find package '@mastra/duckdb'".
+const isServerless =
+  !!process.env.NETLIFY ||
+  !!process.env.LAMBDA_TASK_ROOT ||
+  !!process.env.AWS_LAMBDA_FUNCTION_NAME;
 
 async function buildStorage() {
   if (isServerless) {
