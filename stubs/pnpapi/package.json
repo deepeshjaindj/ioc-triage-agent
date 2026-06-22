@@ -1,0 +1,15 @@
+{
+  "name": "pnpapi",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Local no-op stub for the Yarn PnP `pnpapi` virtual module. It is referenced transitively by @mastra/deployer-netlify's bundler but only exists at runtime under Yarn PnP. Providing an empty module lets `mastra build` resolve the import in a normal npm install.",
+  "type": "module",
+  "main": "index.cjs",
+  "module": "index.mjs",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./index.cjs"
+    }
+  }
+}
